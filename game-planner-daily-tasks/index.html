@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>游戏策划 · 每日任务清单</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface-2: #232733;
+      --border: #2e3345;
+      --text: #e8eaf0;
+      --text-muted: #8b92a8;
+      --accent: #6c8cff;
+      --accent-hover: #8aa4ff;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --danger: #f87171;
+      --radius: 12px;
+      --shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+
+    .app {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px 48px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    .brand h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-top: 4px;
+    }
+
+    .date-nav {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 6px;
+    }
+
+    .date-nav button {
+      background: var(--surface-2);
+      border: none;
+      color: var(--text);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.15s;
+    }
+
+    .date-nav button:hover { background: var(--border); }
+
+    .date-nav input[type="date"] {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 0.95rem;
+      padding: 6px 8px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .date-nav input[type="date"]::-webkit-calendar-picker-indicator {
+      filter: invert(0.8);
+      cursor: pointer;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-card .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .stat-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .stat-card.done .value { color: var(--success); }
+
+    .progress-bar-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 0.9rem;
+    }
+
+    .progress-header span:last-child { color: var(--text-muted); }
+
+    .progress-bar {
+      height: 8px;
+      background: var(--surface-2);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), var(--success));
+      border-radius: 99px;
+      transition: width 0.3s ease;
+      width: 0%;
+    }
+
+    .main-layout {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      align-items: start;
+    }
+
+    @media (max-width: 800px) {
+      .main-layout { grid-template-columns: 1fr; }
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      margin-bottom: 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .add-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .add-form input,
+    .add-form select,
+    .add-form textarea {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .add-form input:focus,
+    .add-form select:focus,
+    .add-form textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .add-form textarea { resize: vertical; min-height: 60px; }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 0.9rem;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s, opacity 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .btn-primary:hover { background: var(--accent-hover); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover { background: var(--surface-2); color: var(--text); }
+
+    .btn-danger {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid transparent;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+    }
+
+    .btn-danger:hover { background: rgba(248, 113, 113, 0.1); }
+
+    .task-list { list-style: none; }
+
+    .task-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border);
+      animation: fadeIn 0.2s ease;
+    }
+
+    .task-item:last-child { border-bottom: none; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .task-item.done .task-title {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .task-check {
+      width: 22px;
+      height: 22px;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .task-item.done .task-check {
+      background: var(--success);
+      border-color: var(--success);
+    }
+
+    .task-item.done .task-check::after {
+      content: "✓";
+      color: #0f1117;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .task-body { flex: 1; min-width: 0; }
+
+    .task-title {
+      font-size: 0.95rem;
+      font-weight: 500;
+      word-break: break-word;
+    }
+
+    .task-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+      align-items: center;
+    }
+
+    .tag {
+      font-size: 0.72rem;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 500;
+    }
+
+    .tag-cat { background: rgba(108, 140, 255, 0.15); color: var(--accent); }
+    .tag-priority-high { background: rgba(248, 113, 113, 0.15); color: var(--danger); }
+    .tag-priority-medium { background: rgba(251, 191, 36, 0.15); color: var(--warning); }
+    .tag-priority-low { background: rgba(139, 146, 168, 0.15); color: var(--text-muted); }
+
+    .task-note {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+
+    .sidebar-section { margin-bottom: 20px; }
+
+    .sidebar-section:last-child { margin-bottom: 0; }
+
+    .category-stat {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      font-size: 0.88rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .category-stat:last-child { border-bottom: none; }
+
+    .category-stat .count {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .storage-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+
+    .filter-btn.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px 20px;
+      border-radius: 99px;
+      font-size: 0.88rem;
+      opacity: 0;
+      transition: all 0.3s ease;
+      z-index: 100;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>🎮 游戏策划 · 每日任务清单</h1>
+        <p>本地存储，无需联网 · 数据保存在浏览器中</p>
+      </div>
+      <div class="date-nav">
+        <button id="btnPrevDay" title="前一天">◀</button>
+        <input type="date" id="datePicker" />
+        <button id="btnNextDay" title="后一天">▶</button>
+        <button id="btnToday" title="今天" style="width:auto;padding:0 12px;font-size:0.85rem;">今天</button>
+      </div>
+    </header>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="value" id="statTotal">0</div>
+        <div class="label">今日任务</div>
+      </div>
+      <div class="stat-card done">
+        <div class="value" id="statDone">0</div>
+        <div class="label">已完成</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statPending">0</div>
+        <div class="label">待完成</div>
+      </div>
+      <div class="stat-card">
+        <div class="value" id="statHigh">0</div>
+        <div class="label">高优先级</div>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-header">
+        <span>今日完成进度</span>
+        <span id="progressText">0%</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <div class="main-layout">
+      <div class="panel">
+        <h2>任务列表</h2>
+
+        <form class="add-form" id="addForm">
+          <input type="text" id="taskTitle" placeholder="任务名称，例如：调整新手引导关卡节奏" required maxlength="120" />
+          <div class="form-row">
+            <select id="taskCategory">
+              <option value="系统设计">系统设计</option>
+              <option value="数值策划">数值策划</option>
+              <option value="关卡设计">关卡设计</option>
+              <option value="文案剧情">文案剧情</option>
+              <option value="UI/UX">UI/UX</option>
+              <option value="战斗设计">战斗设计</option>
+              <option value="活动策划">活动策划</option>
+              <option value="文档输出">文档输出</option>
+              <option value="会议沟通">会议沟通</option>
+              <option value="其他">其他</option>
+            </select>
+            <select id="taskPriority">
+              <option value="high">高优先级</option>
+              <option value="medium" selected>中优先级</option>
+              <option value="low">低优先级</option>
+            </select>
+          </div>
+          <textarea id="taskNote" placeholder="备注（可选）：交付物、关联文档链接等" maxlength="300"></textarea>
+          <button type="submit" class="btn btn-primary">+ 添加任务</button>
+        </form>
+
+        <div class="filter-bar">
+          <button class="filter-btn active" data-filter="all">全部</button>
+          <button class="filter-btn" data-filter="pending">待完成</button>
+          <button class="filter-btn" data-filter="done">已完成</button>
+        </div>
+
+        <ul class="task-list" id="taskList"></ul>
+        <div class="toolbar" id="toolbar" style="display:none;">
+          <button class="btn btn-ghost" id="btnClearDone">清除已完成</button>
+          <button class="btn btn-ghost" id="btnExport">导出 JSON</button>
+          <label class="btn btn-ghost" style="cursor:pointer;">
+            导入 JSON
+            <input type="file" id="importFile" accept=".json" style="display:none;" />
+          </label>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel sidebar-section">
+          <h2>分类统计</h2>
+          <div id="categoryStats"></div>
+        </div>
+        <div class="panel sidebar-section">
+          <h2>本周概览</h2>
+          <div id="weekOverview"></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="storage-hint">💾 数据自动保存至浏览器 localStorage，关闭页面后不会丢失</p>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const STORAGE_KEY = "game-planner-daily-tasks";
+    const CATEGORIES = [
+      "系统设计", "数值策划", "关卡设计", "文案剧情", "UI/UX",
+      "战斗设计", "活动策划", "文档输出", "会议沟通", "其他"
+    ];
+    const PRIORITY_LABELS = { high: "高", medium: "中", low: "低" };
+
+    let currentDate = todayStr();
+    let currentFilter = "all";
+    let store = loadStore();
+
+    function todayStr() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function loadStore() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : {};
+      } catch {
+        return {};
+      }
+    }
+
+    function saveStore() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    }
+
+    function getTasks(date) {
+      return store[date] || [];
+    }
+
+    function setTasks(date, tasks) {
+      if (tasks.length === 0) {
+        delete store[date];
+      } else {
+        store[date] = tasks;
+      }
+      saveStore();
+    }
+
+    function uid() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    function showToast(msg) {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.classList.add("show");
+      setTimeout(() => el.classList.remove("show"), 2200);
+    }
+
+    function render() {
+      const tasks = getTasks(currentDate);
+      const filtered = tasks.filter(t => {
+        if (currentFilter === "pending") return !t.done;
+        if (currentFilter === "done") return t.done;
+        return true;
+      });
+
+      document.getElementById("statTotal").textContent = tasks.length;
+      const doneCount = tasks.filter(t => t.done).length;
+      document.getElementById("statDone").textContent = doneCount;
+      document.getElementById("statPending").textContent = tasks.length - doneCount;
+      document.getElementById("statHigh").textContent = tasks.filter(t => t.priority === "high" && !t.done).length;
+
+      const pct = tasks.length ? Math.round((doneCount / tasks.length) * 100) : 0;
+      document.getElementById("progressText").textContent = pct + "%";
+      document.getElementById("progressFill").style.width = pct + "%";
+
+      const list = document.getElementById("taskList");
+      const toolbar = document.getElementById("toolbar");
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<li class="empty-state">
+          <div class="icon">${tasks.length ? "🔍" : "📋"}</div>
+          <div>${tasks.length ? "没有符合筛选条件的任务" : "今天还没有任务，添加一个开始吧"}</div>
+        </li>`;
+      } else {
+        list.innerHTML = filtered.map(t => `
+          <li class="task-item ${t.done ? "done" : ""}" data-id="${t.id}">
+            <div class="task-check" data-action="toggle"></div>
+            <div class="task-body">
+              <div class="task-title">${escapeHtml(t.title)}</div>
+              ${t.note ? `<div class="task-note">${escapeHtml(t.note)}</div>` : ""}
+              <div class="task-meta">
+                <span class="tag tag-cat">${escapeHtml(t.category)}</span>
+                <span class="tag tag-priority-${t.priority}">${PRIORITY_LABELS[t.priority]}优先级</span>
+              </div>
+            </div>
+            <button class="btn btn-danger" data-action="delete">删除</button>
+          </li>
+        `).join("");
+      }
+
+      toolbar.style.display = tasks.length ? "flex" : "none";
+      renderCategoryStats(tasks);
+      renderWeekOverview();
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement("div");
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    function renderCategoryStats(tasks) {
+      const el = document.getElementById("categoryStats");
+      const counts = {};
+      CATEGORIES.forEach(c => { counts[c] = { total: 0, done: 0 }; });
+      tasks.forEach(t => {
+        if (!counts[t.category]) counts[t.category] = { total: 0, done: 0 };
+        counts[t.category].total++;
+        if (t.done) counts[t.category].done++;
+      });
+
+      const active = Object.entries(counts).filter(([, v]) => v.total > 0);
+      if (!active.length) {
+        el.innerHTML = '<div style="color:var(--text-muted);font-size:0.88rem;">暂无数据</div>';
+        return;
+      }
+
+      el.innerHTML = active.map(([cat, v]) => `
+        <div class="category-stat">
+          <span>${escapeHtml(cat)}</span>
+          <span class="count">${v.done}/${v.total}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderWeekOverview() {
+      const el = document.getElementById("weekOverview");
+      const days = [];
+      const base = new Date(currentDate + "T12:00:00");
+      const dayOfWeek = base.getDay();
+      const monday = new Date(base);
+      monday.setDate(base.getDate() - ((dayOfWeek + 6) % 7));
+
+      for (let i = 0; i < 7; i++) {
+        const d = new Date(monday);
+        d.setDate(monday.getDate() + i);
+        const ds = d.toISOString().slice(0, 10);
+        const tasks = getTasks(ds);
+        const done = tasks.filter(t => t.done).length;
+        days.push({ date: ds, total: tasks.length, done });
+      }
+
+      const dayNames = ["一", "二", "三", "四", "五", "六", "日"];
+      el.innerHTML = days.map((d, i) => {
+        const isToday = d.date === currentDate;
+        const pct = d.total ? Math.round((d.done / d.total) * 100) : 0;
+        return `<div class="category-stat" style="${isToday ? "color:var(--accent);" : ""}">
+          <span>周${dayNames[i]}${isToday ? " ·" : ""}</span>
+          <span class="count">${d.done}/${d.total}${d.total ? ` (${pct}%)` : ""}</span>
+        </div>`;
+      }).join("");
+    }
+
+    document.getElementById("datePicker").value = currentDate;
+
+    document.getElementById("datePicker").addEventListener("change", e => {
+      currentDate = e.target.value;
+      render();
+    });
+
+    document.getElementById("btnPrevDay").addEventListener("click", () => {
+      const d = new Date(currentDate + "T12:00:00");
+      d.setDate(d.getDate() - 1);
+      currentDate = d.toISOString().slice(0, 10);
+      document.getElementById("datePicker").value = currentDate;
+      render();
+    });
+
+    document.getElementById("btnNextDay").addEventListener("click", () => {
+      const d = new Date(currentDate + "T12:00:00");
+      d.setDate(d.getDate() + 1);
+      currentDate = d.toISOString().slice(0, 10);
+      document.getElementById("datePicker").value = currentDate;
+      render();
+    });
+
+    document.getElementById("btnToday").addEventListener("click", () => {
+      currentDate = todayStr();
+      document.getElementById("datePicker").value = currentDate;
+      render();
+    });
+
+    document.getElementById("addForm").addEventListener("submit", e => {
+      e.preventDefault();
+      const title = document.getElementById("taskTitle").value.trim();
+      if (!title) return;
+
+      const tasks = getTasks(currentDate);
+      tasks.push({
+        id: uid(),
+        title,
+        category: document.getElementById("taskCategory").value,
+        priority: document.getElementById("taskPriority").value,
+        note: document.getElementById("taskNote").value.trim(),
+        done: false,
+        createdAt: Date.now()
+      });
+      setTasks(currentDate, tasks);
+
+      document.getElementById("taskTitle").value = "";
+      document.getElementById("taskNote").value = "";
+      document.getElementById("taskTitle").focus();
+      showToast("任务已添加");
+      render();
+    });
+
+    document.getElementById("taskList").addEventListener("click", e => {
+      const item = e.target.closest(".task-item");
+      if (!item) return;
+      const id = item.dataset.id;
+      const action = e.target.dataset.action;
+      const tasks = getTasks(currentDate);
+      const idx = tasks.findIndex(t => t.id === id);
+      if (idx === -1) return;
+
+      if (action === "toggle") {
+        tasks[idx].done = !tasks[idx].done;
+        setTasks(currentDate, tasks);
+        render();
+      } else if (action === "delete") {
+        tasks.splice(idx, 1);
+        setTasks(currentDate, tasks);
+        showToast("任务已删除");
+        render();
+      }
+    });
+
+    document.querySelectorAll(".filter-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentFilter = btn.dataset.filter;
+        render();
+      });
+    });
+
+    document.getElementById("btnClearDone").addEventListener("click", () => {
+      const tasks = getTasks(currentDate).filter(t => !t.done);
+      setTasks(currentDate, tasks);
+      showToast("已清除已完成任务");
+      render();
+    });
+
+    document.getElementById("btnExport").addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(store, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `game-planner-tasks-${todayStr()}.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast("已导出 JSON 文件");
+    });
+
+    document.getElementById("importFile").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (typeof data !== "object" || Array.isArray(data)) throw new Error("invalid");
+          store = { ...store, ...data };
+          saveStore();
+          showToast("导入成功，已合并数据");
+          render();
+        } catch {
+          showToast("导入失败：文件格式不正确");
+        }
+      };
+      reader.readAsText(file);
+      e.target.value = "";
+    });
+
+    render();
+  </script>
+</body>
+</html>
